@@ -1,7 +1,7 @@
 #pragma once
 
 enum class CardRank {
-	Ace = 1,
+	Ace = 11,
 	Two,
 	Three,
 	Four,
