@@ -1,14 +1,16 @@
 #pragma once
-#include "GameEngine.h"
+#include "IGameObserver.h"
 
-class IGameController : public GameEngine
+class IGameController
 {
     public:
-    virtual void StartNewGame();
-    virtual void PlayerStand();
-    virtual void PlayerHit();
-    virtual void DealerTurn();
-    virtual void RegisterObserver(IGameObserver* observer);
-    virtual void UnregisterObserver(IGameObserver* observer);
+    virtual ~IGameController() = default;
+
+    virtual void StartNewGame() = 0;
+    virtual void PlayerStand() = 0;
+    virtual void PlayerHit() = 0;
+    
+    virtual void RegisterObserver(IGameObserver* observer) = 0;
+    virtual void UnregisterObserver(IGameObserver* observer) = 0;
 
 };

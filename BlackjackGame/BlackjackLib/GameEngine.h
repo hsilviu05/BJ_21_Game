@@ -2,10 +2,11 @@
 #include "Hand.h"
 #include "Deck.h"
 #include "IGameObserver.h"
+#include "IGameController.h"
 #include "GameState.h"
 #include <vector>
 
-class GameEngine
+class GameEngine : public IGameController
 {
     private:
     Hand m_playerHand;
@@ -15,17 +16,22 @@ class GameEngine
     GameState m_gameState;
     
     public:
-    void StartGame();
-    void PlayerHit();
-    void PlayerStand();
-    void RegisteredObserver(IGameObserver* observer);
-    void UnregisterObserver(IGameObserver* observer);
+    GameEngine();
+
+    void StartNewGame() override;
+    void PlayerHit() override;
+    void PlayerStand() override;
+
+    void RegisterObserver(IGameObserver* observer) override;
+    void UnregisterObserver(IGameObserver* observer) override;
     
     private:
     void NotifyGameStarted();
     void NotifyPlayerHandChanged();
     void NotifyDealerHandChanged();
     void NotifyGameEnded(GameState state);
+    void NotifyPlayerTurnBegan();
+
     void DealerTurn();
 
 

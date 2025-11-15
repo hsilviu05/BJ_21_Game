@@ -41,3 +41,12 @@ HandData Hand::ToData() const
 	data.value = GetValue();
 	return data;
 }
+
+Card Hand::GetCard(int index) const
+{
+    if (index >= 0 && index < cards.size())
+    {
+        return cards[index];
+    }
+    throw std::out_of_range("Index invalid pentru GetCard in clasa Hand");
+}

@@ -1,5 +1,6 @@
 #pragma once
-#include<vector>
+#include <vector>
+#include <stdexcept>
 #include "Card.h"
 #include "HandData.h"
 class Hand
@@ -12,7 +13,7 @@ class Hand
 		void Clear();
 		HandData ToData() const;
 
-
+		Card GetCard(int index) const;
 
 };
 

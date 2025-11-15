@@ -242,3 +242,7 @@ node_modules/
 # JetBrains Rider
 .idea/
 *.sln.iml
+
+# Mac/VS Code build artifacts
+*.dSYM/
+BlackjackGame/BlackjackUI/blackjack_game

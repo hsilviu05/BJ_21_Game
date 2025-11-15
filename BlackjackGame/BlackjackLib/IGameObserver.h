@@ -1,15 +1,15 @@
 #pragma once
 #include "HandData.h"
+#include "GameState.h"
 
 class IGameObserver
 {
 public:
-    IGameObserver();
-    ~IGameObserver();
+    virtual ~IGameObserver() = default;
 
-    virtual void OnGameStarted(const HandData& playerHand, const HandData& dealerHand);
-    virtual void OnPlayerHandChanged(const HandData& playerHand);
-    virtual void OnDealerHandChanged(const HandData& dealerHand);
-    virtual void OnGameEnded(GameState state, const HandData& finalPlayerData, const HandData& finalDealerData);
-    virtual void OnPlayerTurnBegan();
+    virtual void OnGameStarted(const HandData& playerHand, const HandData& dealerHand) = 0;
+    virtual void OnPlayerHandChanged(const HandData& playerHand) = 0;
+    virtual void OnDealerHandChanged(const HandData& dealerHand) = 0;
+    virtual void OnGameEnded(GameState state, const HandData& finalPlayerData, const HandData& finalDealerData) = 0;
+    virtual void OnPlayerTurnBegan() = 0;
 };
