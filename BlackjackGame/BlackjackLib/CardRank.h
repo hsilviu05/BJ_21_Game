@@ -13,5 +13,5 @@ enum class CardRank {
 	Jack,
 	Queen,
 	King,
-	Ace = 11
+	Ace
 };
