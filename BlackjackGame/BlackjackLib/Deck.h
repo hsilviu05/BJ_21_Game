@@ -16,6 +16,7 @@ class Deck
       Deck();
       void Shuffle();
       Card DrawCard();
-
+      int GetCardCount() const;
+      void Reset();
 };
 

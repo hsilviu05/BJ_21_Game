@@ -43,3 +43,34 @@ Card Deck::DrawCard()
     cards.pop_back();
     return cardToDraw;
 }
+
+int Deck::GetCardCount() const
+{
+    return static_cast<int>(cards.size());
+}
+
+void Deck::Reset()
+{
+    cards.clear();
+    CardSuit suits[] = { 
+        CardSuit::Hearts, CardSuit::Diamonds, CardSuit::Clubs, CardSuit::Spades 
+    };
+
+    CardRank ranks[] = { 
+        CardRank::Two, CardRank::Three, CardRank::Four, CardRank::Five, 
+        CardRank::Six, CardRank::Seven, CardRank::Eight, CardRank::Nine, 
+        CardRank::Ten, CardRank::Jack, CardRank::Queen, CardRank::King, 
+        CardRank::Ace 
+    };
+    
+    for (int deck = 0; deck < DECKS_IN_PLAY; ++deck)
+    {
+        for (const auto& suit : suits)
+        {
+            for (const auto& rank : ranks)
+            {
+                cards.emplace_back(rank, suit); 
+            }
+        }
+    }
+}

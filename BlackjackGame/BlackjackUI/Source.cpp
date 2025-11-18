@@ -1,145 +1,195 @@
+#include "../BlackjackLib/BlackjackAPI.h"
+#include "../BlackjackLib/IGameController.h"
+#include "../BlackjackLib/IGameObserver.h"
+#include "../BlackjackLib/CardData.h"
+#include "../BlackjackLib/HandData.h"
+#include "../BlackjackLib/GameState.h"
+#include "../BlackjackLib/CardFormatter.h"
 #include <iostream>
 #include <string>
-#include <vector>
+#include <memory> 
 
-#include "IGameController.h"
-#include "IGameObserver.h"
-#include "HandData.h"
-#include "GameState.h"
-#include "CardSuit.h"
-#include "CardRank.h"
-
-
-#include "GameEngine.h"
-
-std::string RankToString(CardRank rank)
-{
-    switch (rank)
-    {
-        case CardRank::Two:   return "Doi";
-        case CardRank::Three: return "Trei";
-        case CardRank::Four:  return "Patru";
-        case CardRank::Five:  return "Cinci";
-        case CardRank::Six:   return "Sase";
-        case CardRank::Seven: return "Sapte";
-        case CardRank::Eight: return "Opt";
-        case CardRank::Nine:  return "Noua";
-        case CardRank::Ten:   return "Zece";
-        case CardRank::Jack:  return "Valet";
-        case CardRank::Queen: return "Dama";
-        case CardRank::King:  return "Popa";
-        case CardRank::Ace:   return "As";
-        default: return "?";
-    }
-}
-
-std::string SuitToString(CardSuit suit)
-{
-    switch (suit)
-    {
-        case CardSuit::Hearts:   return "Inima Rosie";
-        case CardSuit::Diamonds: return "Romb";
-        case CardSuit::Clubs:    return "Trefla";
-        case CardSuit::Spades:   return "Inima Neagra";
-        default: return "?";
-    }
-}
-
-void PrintHand(const std::string& title, const HandData& hand)
-{
-    std::cout << title << " (Total: " << hand.value << ")\n";
-    for (const CardData& card : hand.cards)
-    {
-        std::cout << "  - " << RankToString(card.rank) << " de " << SuitToString(card.suit) << "\n";
-    }
-}
 class ConsoleObserver : public IGameObserver
 {
+private:
+    bool m_gameEnded = false;
+
 public:
-    virtual ~ConsoleObserver() = default;
-
-    virtual void OnGameStarted(const HandData& playerHand, const HandData& dealerHand) override
+    void OnGameStarted(const HandData& playerHand, const HandData& dealerHand) override
     {
-        std::cout << "--- JOC NOU INCEPUT ---\n";
-        PrintHand("Mana Jucator:", playerHand);
-        PrintHand("Mana Dealer (vizibil):", dealerHand);
+        m_gameEnded = false;  // Reset flag la început de joc
+
+        std::cout << "\n=== NEW GAME STARTED ===\n";
+        std::cout << "Your hand:\n";
+        for (const auto& card : playerHand.cards)
+        {
+            std::cout << "  " << CardFormatter::CardToString(card) << "\n";
+        }
+        std::cout << "Total: " << playerHand.value << "\n\n";
+        
+        std::cout << "Dealer's visible card:\n";
+        if (!dealerHand.cards.empty())
+        {
+            std::cout << "  " << CardFormatter::CardToString(dealerHand.cards[0]) << "\n";
+        }
+        std::cout << "\n";
     }
 
-    virtual void OnPlayerHandChanged(const HandData& playerHand) override
+    void OnPlayerHandChanged(const HandData& hand) override
     {
-        std::cout << "\n=> Jucatorul a tras o carte.\n";
-        PrintHand("Mana Jucator:", playerHand);
+        std::cout << "\nYour hand:\n";
+        for (const auto& card : hand.cards)
+        {
+            std::cout << "  " << CardFormatter::CardToString(card) << "\n";
+        }
+        std::cout << "Total: " << hand.value << "\n";
     }
 
-    virtual void OnDealerHandChanged(const HandData& dealerHand) override
+    void OnDealerHandChanged(const HandData& hand) override
     {
-        std::cout << "\n=> Dealerul a tras o carte.\n";
-        PrintHand("Mana Dealer:", dealerHand);
+        std::cout << "\nDealer's hand:\n";
+        for (const auto& card : hand.cards)
+        {
+            std::cout << "  " << CardFormatter::CardToString(card) << "\n";
+        }
+        std::cout << "Total: " << hand.value << "\n";
     }
 
-    virtual void OnPlayerTurnBegan() override
+    void OnGameEnded(GameState state, const HandData& playerHand, const HandData& dealerHand) override
     {
-        std::cout << "\nAcum e randul tau (Player). Ce faci? (h = hit, s = stand)\n";
-    }
+        m_gameEnded = true;  // Setează flag când jocul se termină
 
-    virtual void OnGameEnded(GameState state, const HandData& finalPlayerData, const HandData& finalDealerData) override
-    {
-        std::cout << "\n--- JOC TERMINAT --- \n";
-        PrintHand("Mana Finala Jucator:", finalPlayerData);
-        PrintHand("Mana Finala Dealer:", finalDealerData);
+        std::cout << "\n=== GAME OVER ===\n";
+        
+        std::cout << "\nYour final hand:\n";
+        for (const auto& card : playerHand.cards)
+        {
+            std::cout << "  " << CardFormatter::CardToString(card) << "\n";
+        }
+        std::cout << "Total: " << playerHand.value << "\n";
 
+        std::cout << "\nDealer's final hand:\n";
+        for (const auto& card : dealerHand.cards)
+        {
+            std::cout << "  " << CardFormatter::CardToString(card) << "\n";
+        }
+        std::cout << "Total: " << dealerHand.value << "\n";
+
+        std::cout << "\nResult: ";
         switch (state)
         {
-        case GameState::PlayerWins:
-            std::cout << "REZULTAT: AI CASTIGAT!\n";
-            break;
-        case GameState::DealerWins:
-            std::cout << "REZULTAT: DEALERUL A CASTIGAT!\n";
-            break;
-        case GameState::Push:
-            std::cout << "REZULTAT: EGALITATE (PUSH)!\n";
-            break;
-        case GameState::PlayerBlackjack:
-            std::cout << "REZULTAT: BLACKJACK! AI CASTIGAT!\n";
-            break;
-        case GameState::PlayerBust:
-            std::cout << "REZULTAT: AI DEPASIT 21 (BUST)! DEALERUL CASTIGA.\n";
-            break;
+            case GameState::PlayerWins:
+                std::cout << "YOU WIN!\n";
+                break;
+            case GameState::DealerWins:
+                std::cout << "DEALER WINS!\n";
+                break;
+            case GameState::Push:
+                std::cout << "PUSH (TIE)!\n";
+                break;
+            case GameState::PlayerBlackjack:
+                std::cout << "BLACKJACK! YOU WIN!\n";
+                break;
+            case GameState::PlayerBust:
+                std::cout << "BUST! YOU LOSE!\n";
+                break;
+            default:
+                break;
         }
+        std::cout << "\n";
+    }
+
+    void OnPlayerTurnBegan() override
+    {
+        std::cout << "\n--- YOUR TURN ---\n";
+    }
+
+    // Metodă publică pentru a verifica dacă jocul s-a terminat
+    bool IsGameEnded() const
+    {
+        return m_gameEnded;
     }
 };
 
+void DisplayMenu()
+{
+    std::cout << "\n1. Hit (draw a card)\n";
+    std::cout << "2. Stand (end turn)\n";
+    std::cout << "Choice: ";
+}
+
+void PlayGame(IGameController* game, ConsoleObserver& observer)  // Pasează observer ca parametru
+{
+    game->StartNewGame();
+
+    bool gameInProgress = true;
+
+    while (gameInProgress)
+    {
+        // Verifică dacă jocul s-a terminat (bust, blackjack, etc.)
+        if (observer.IsGameEnded())
+        {
+            break;  // Ieși din loop
+        }
+
+        DisplayMenu();
+        
+        int choice;
+        std::cin >> choice;
+
+        if (std::cin.fail())
+        {
+            std::cin.clear();
+            std::cin.ignore(10000, '\n');
+            std::cout << "Invalid input! Please enter 1 or 2.\n";
+            continue;
+        }
+
+        switch (choice)
+        {
+            case 1:
+                game->PlayerHit();
+                break;
+            case 2:
+                game->PlayerStand();
+                gameInProgress = false;
+                break;
+            default:
+                std::cout << "Invalid choice! Please enter 1 or 2.\n";
+                continue;
+        }
+    }
+}
 
 int main()
 {
-    GameEngine game;
+    std::cout << "=================================\n";
+    std::cout << "   WELCOME TO BLACKJACK (21)    \n";
+    std::cout << "=================================\n";
 
+    auto game = BlackjackAPI::CreateGameController();
     ConsoleObserver observer;
-
-    game.RegisterObserver(&observer);
-
-    game.StartNewGame();
-
-    std::string input;
     
-    while (std::cin >> input)
+    game->RegisterObserver(&observer);
+
+    bool playing = true;
+    while (playing)
     {
-        if (input == "h" || input == "hit")
+        PlayGame(game.get(), observer);  // Pasează observer
+
+        std::cout << "\nPlay again? (y/n): ";
+        char response;
+        std::cin >> response;
+
+        if (response != 'y' && response != 'Y')
         {
-            std::cout << "-> Comanda: HIT\n";
-            game.PlayerHit();
-        }
-        else if (input == "s" || input == "stand")
-        {
-            std::cout << "-> Comanda: STAND\n";
-            game.PlayerStand();
-        }
-        else if (input == "n" || input == "new")
-        {
-            std::cout << "-> Comanda: JOC NOU\n";
-            game.StartNewGame();
+            playing = false;
         }
     }
 
+    game->UnregisterObserver(&observer);
+    BlackjackAPI::DestroyGameController(game.get());
+
+    std::cout << "\nThanks for playing!\n";
     return 0;
 }

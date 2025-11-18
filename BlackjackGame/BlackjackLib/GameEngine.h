@@ -36,5 +36,7 @@ class GameEngine : public IGameController
 
     void DealerTurn();
 
+    int MIN_CARD_THRESHOLD = 10;
+
 
 };

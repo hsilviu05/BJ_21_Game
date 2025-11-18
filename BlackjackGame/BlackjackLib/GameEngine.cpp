@@ -7,7 +7,16 @@ GameEngine::GameEngine()
 
 void GameEngine::StartNewGame()
 {
-    m_deck.Shuffle(); 
+    if (m_deck.GetCardCount() < MIN_CARD_THRESHOLD)  
+    {
+        m_deck.Reset();
+        m_deck.Shuffle();
+    }
+    else
+    {
+        m_deck.Shuffle(); 
+    }
+
     m_playerHand.Clear();
     m_dealerHand.Clear();
 
@@ -53,14 +62,14 @@ void GameEngine::PlayerHit()
 {
     m_playerHand.AddCard(m_deck.DrawCard());
     NotifyPlayerHandChanged();
-    if (m_playerHand.GetValue() == 21)
-    {
-        DealerTurn();
-    }
-    if(m_playerHand.GetValue() > 21)
+    if (m_playerHand.GetValue() > 21)
     {
         m_gameState = GameState::PlayerBust;
         NotifyGameEnded(m_gameState);
+    }
+    else if(m_playerHand.GetValue() == 21)
+    {
+        DealerTurn();
     }
 }
 
