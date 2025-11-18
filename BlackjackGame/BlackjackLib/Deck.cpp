@@ -13,12 +13,14 @@ Deck::Deck()
         CardRank::Ten, CardRank::Jack, CardRank::Queen, CardRank::King, 
         CardRank::Ace 
     };
-    
-    for (const auto& suit : suits)
+    for (int deck = 0; deck < DECKS_IN_PLAY; ++deck)
     {
-        for (const auto& rank : ranks)
+        for (const auto& suit : suits)
         {
-            cards.emplace_back(rank, suit); 
+            for (const auto& rank : ranks)
+            {
+                cards.emplace_back(rank, suit); 
+            }
         }
     }
 }

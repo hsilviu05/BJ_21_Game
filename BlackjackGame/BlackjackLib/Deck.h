@@ -10,6 +10,7 @@ class Deck
 {
     private:
 		std::vector<Card> cards;
+    const int DECKS_IN_PLAY = 4;
 
     public:
       Deck();

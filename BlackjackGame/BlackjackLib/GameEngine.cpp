@@ -53,7 +53,10 @@ void GameEngine::PlayerHit()
 {
     m_playerHand.AddCard(m_deck.DrawCard());
     NotifyPlayerHandChanged();
-
+    if (m_playerHand.GetValue() == 21)
+    {
+        DealerTurn();
+    }
     if(m_playerHand.GetValue() > 21)
     {
         m_gameState = GameState::PlayerBust;
