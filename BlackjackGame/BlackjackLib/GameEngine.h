@@ -26,6 +26,8 @@ class GameEngine : public IGameController
     void UnregisterObserver(IGameObserver* observer) override;
     
     private:
+    template<typename Func>
+    void NotifyObservers(Func&& func);
     void NotifyGameStarted();
     void NotifyPlayerHandChanged();
     void NotifyDealerHandChanged();

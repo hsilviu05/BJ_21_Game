@@ -27,7 +27,8 @@ Deck::Deck()
 
 void Deck::Shuffle()
 {
-    auto rng = std::default_random_engine{};
+    auto seed = std::chrono::system_clock::now().time_since_epoch().count();
+    auto rng = std::default_random_engine(seed);
     std::shuffle(cards.begin(), cards.end(), rng);
 }
 

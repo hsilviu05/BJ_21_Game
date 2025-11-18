@@ -108,43 +108,51 @@ void GameEngine::UnregisterObserver(IGameObserver* observer)
     m_observers.erase(std::remove(m_observers.begin(), m_observers.end(), observer), m_observers.end());
 }
 
-void GameEngine::NotifyGameStarted()
+template<typename Func>
+void GameEngine::NotifyObservers(Func&& func)
 {
     for (IGameObserver* obs : m_observers)
     {
-        obs->OnGameStarted(m_playerHand.ToData(), m_dealerHand.ToData());
+        func(obs);
     }
+}
+
+void GameEngine::NotifyGameStarted()
+{
+    NotifyObservers([this](IGameObserver* obs)
+    {
+        obs->OnGameStarted(m_playerHand.ToData(), m_dealerHand.ToData());
+    });
 }
 
 void GameEngine::NotifyPlayerHandChanged()
 {
-    for (IGameObserver* obs : m_observers)
+    NotifyObservers([this](IGameObserver* obs)
     {
         obs->OnPlayerHandChanged(m_playerHand.ToData());
-    }
+    });
 }
 
 void GameEngine::NotifyDealerHandChanged()
 {
-    for (IGameObserver* obs : m_observers)
+    NotifyObservers([this](IGameObserver* obs)
     {
         obs->OnDealerHandChanged(m_dealerHand.ToData());
-    }
+    });
 }
-
 void GameEngine::NotifyGameEnded(GameState state)
 {
     m_gameState = state;
-    for (IGameObserver* obs : m_observers)
+    NotifyObservers([this](IGameObserver* obs)
     {
         obs->OnGameEnded(m_gameState, m_playerHand.ToData(), m_dealerHand.ToData());
-    }
+    });
 }
 
 void GameEngine::NotifyPlayerTurnBegan()
 {
-    for (IGameObserver* obs : m_observers)
+    NotifyObservers([this](IGameObserver* obs)
     {
         obs->OnPlayerTurnBegan();
-    }
+    });
 }

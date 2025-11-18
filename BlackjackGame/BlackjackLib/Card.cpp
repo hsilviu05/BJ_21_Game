@@ -20,6 +20,7 @@ int Card::GetValue() const
         case CardRank::Ace:
             return 11;
     }
+    throw std::logic_error("Invalid Card Rank");
 }
 
 CardData Card::ToData() const

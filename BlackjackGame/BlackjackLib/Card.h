@@ -3,6 +3,8 @@
 #include "CardRank.h"
 #include "CardSuit.h"
 #include "CardData.h"
+
+#include <stdexcept>
 class Card
 {
 	private:
