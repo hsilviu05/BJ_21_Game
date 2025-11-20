@@ -127,19 +127,30 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="BlackjackAPI.cpp" />
     <ClCompile Include="Card.cpp" />
+    <ClCompile Include="CardFormatter.cpp" />
     <ClCompile Include="Deck.cpp" />
+    <ClCompile Include="GameEngine.cpp" />
     <ClCompile Include="Hand.cpp" />
+    <ClCompile Include="IGameFactory.cpp" />
     <ClCompile Include="Source.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="BlackjackAPI.h" />
     <ClInclude Include="Card.h" />
     <ClInclude Include="CardData.h" />
+    <ClInclude Include="CardFormatter.h" />
     <ClInclude Include="CardRank.h" />
     <ClInclude Include="CardSuit.h" />
     <ClInclude Include="Deck.h" />
+    <ClInclude Include="GameEngine.h" />
+    <ClInclude Include="GameState.h" />
     <ClInclude Include="Hand.h" />
     <ClInclude Include="HandData.h" />
+    <ClInclude Include="IGameController.h" />
+    <ClInclude Include="IGameFactory.h" />
+    <ClInclude Include="IGameObserver.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
