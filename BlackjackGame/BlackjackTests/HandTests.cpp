@@ -52,9 +52,9 @@ TEST(HandTest, ThreeAcesAdjustment)
     Hand hand;
     hand.AddCard(Card(CardRank::Ace, CardSuit::Hearts));
     hand.AddCard(Card(CardRank::Ace, CardSuit::Diamonds));
-    hand.AddCard(Card(CardRank::Ace, CardSuit::Clubs));
     hand.AddCard(Card(CardRank::Eight, CardSuit::Spades));
-    EXPECT_EQ(hand.GetValue(), 11); // 1 + 1 + 1 + 8
+    hand.AddCard(Card(CardRank::Ace, CardSuit::Clubs));
+    EXPECT_EQ(hand.GetValue(), 21); 
 }
 
 // Test: Bust cu cărți normale
