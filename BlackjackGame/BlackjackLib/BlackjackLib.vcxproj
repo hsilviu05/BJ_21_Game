@@ -153,10 +153,7 @@
     <ClInclude Include="Hand.h" />
     <ClInclude Include="HandData.h" />
     <ClInclude Include="IGameController.h" />
-<<<<<<< Updated upstream
     <ClInclude Include="IGameFactory.h" />
-=======
->>>>>>> Stashed changes
     <ClInclude Include="IGameObserver.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
