@@ -62,6 +62,7 @@ void GameEngine::PlayerHit()
 {
     m_playerHand.AddCard(m_deck.DrawCard());
     NotifyPlayerHandChanged();
+<<<<<<< Updated upstream
     if (m_playerHand.GetValue() > 21)
     {
         m_gameState = GameState::PlayerBust;

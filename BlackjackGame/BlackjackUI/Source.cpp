@@ -1,3 +1,4 @@
+<<<<<<< Updated upstream
 #include "../BlackjackLib/BlackjackAPI.h"
 #include "../BlackjackLib/IGameController.h"
 #include "../BlackjackLib/IGameObserver.h"
@@ -111,6 +112,7 @@ public:
     }
 };
 
+<<<<<<< Updated upstream
 void DisplayMenu()
 {
     std::cout << "\n1. Hit (draw a card)\n";
@@ -193,3 +195,4 @@ int main()
     std::cout << "\nThanks for playing!\n";
     return 0;
 }
+
