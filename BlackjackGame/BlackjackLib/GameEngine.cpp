@@ -64,6 +64,13 @@ void GameEngine::PlayerHit()
     NotifyPlayerHandChanged();
 <<<<<<< Updated upstream
     if (m_playerHand.GetValue() > 21)
+=======
+    if (m_playerHand.GetValue() == 21)
+    {
+		DealerTurn();
+    }
+    if(m_playerHand.GetValue() > 21)
+>>>>>>> Stashed changes
     {
         m_gameState = GameState::PlayerBust;
         NotifyGameEnded(m_gameState);
