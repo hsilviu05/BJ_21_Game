@@ -1,4 +1,3 @@
-#pragma once
 #include "IGameFactory.h"
 
 class GameFactory : public IGameFactory

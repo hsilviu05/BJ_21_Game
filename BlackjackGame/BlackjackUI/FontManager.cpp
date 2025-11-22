@@ -3,15 +3,19 @@
 FontManager::FontManager()
 {
     // Listeaza locatiile comune pentru fonturi Windows
-    const char* fontPaths[] = {
+    const char *fontPaths[] = {
         "C:/Windows/Fonts/arial.ttf",
         "C:/Windows/Fonts/calibri.ttf",
         "C:/Windows/Fonts/tahoma.ttf",
-        "C:/Windows/Fonts/verdana.ttf"
+        "C:/Windows/Fonts/verdana.ttf",
+        "/System/Library/Fonts/Supplemental/Arial.ttf",
+        "/System/Library/Fonts/Helvetica.ttc",
+        "/Library/Fonts/Arial.ttf",
+        "/System/Library/Fonts/SFNS.ttf",
     };
-    
+
     // Încearcă să încarce primul font disponibil
-    for (const char* path : fontPaths)
+    for (const char *path : fontPaths)
     {
         if (TryLoadFont(path))
         {
@@ -21,7 +25,7 @@ FontManager::FontManager()
     }
 }
 
-bool FontManager::TryLoadFont(const char* path)
+bool FontManager::TryLoadFont(const char *path)
 {
     try
     {
@@ -35,7 +39,7 @@ bool FontManager::TryLoadFont(const char* path)
     }
 }
 
-sf::Font* FontManager::GetFont()
+sf::Font *FontManager::GetFont()
 {
     if (m_fontLoaded)
     {
@@ -48,4 +52,3 @@ bool FontManager::IsFontLoaded() const
 {
     return m_fontLoaded;
 }
-

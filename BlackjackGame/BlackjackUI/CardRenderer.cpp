@@ -45,6 +45,11 @@ bool CardTextureManager::LoadCardTexture(CardRank rank, CardSuit suit)
             textures[fileName] = std::move(texture);
             return true;
         }
+        else if (texture.loadFromFile("./BlackjackGame/cards/" + fileName))
+        {
+            textures[fileName] = std::move(texture);
+            return true;
+        }
     }
     return textures.find(fileName) != textures.end();
 }
