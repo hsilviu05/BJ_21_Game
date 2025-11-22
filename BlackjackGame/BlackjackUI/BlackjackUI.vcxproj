@@ -147,8 +147,22 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="CardRenderer.cpp" />
+    <ClCompile Include="FontManager.cpp" />
+    <ClCompile Include="GameController.cpp" />
+    <ClCompile Include="GameObserver.cpp" />
+    <ClCompile Include="GameRenderer.cpp" />
     <ClCompile Include="Mainwindow.cpp" />
     <ClCompile Include="Source.cpp" />
+    <ClCompile Include="UIComponents.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="CardRenderer.h" />
+    <ClInclude Include="FontManager.h" />
+    <ClInclude Include="GameController.h" />
+    <ClInclude Include="GameObserver.h" />
+    <ClInclude Include="GameRenderer.h" />
+    <ClInclude Include="UIComponents.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
