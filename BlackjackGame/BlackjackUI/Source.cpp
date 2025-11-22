@@ -2,15 +2,39 @@
 #include <string>
 #include <map>
 #include <memory>
+#include <iostream>
+#include <filesystem>
 #include "IGameObserver.h"
 #include "IGameController.h"
 #include "HandData.h"
 #include "GameState.h"
 #include "CardSuit.h"
 #include "CardRank.h"
-#include "GameEngine.h"
+#include "BlackjackAPI.h"
 
-// Functie pentru a obtine numele fisierului PNG pentru o carte
+std::string GetResourcesPath()
+{
+    namespace fs = std::filesystem;
+    
+    std::vector<std::string> possiblePaths = {
+        "./BlackjackGame/cards",
+        "../cards",
+        "./cards",
+        "../../BlackjackGame/cards",
+        "../BlackjackGame/cards"
+    };
+
+    for (const auto& path : possiblePaths)
+    {
+        if (fs::exists(path) && fs::is_directory(path))
+        {
+            return path;
+        }
+    }
+    
+    return "./BlackjackGame/cards";
+}
+
 std::string GetCardFileName(CardRank rank, CardSuit suit)
 {
     std::string rankStr;
@@ -43,29 +67,34 @@ std::string GetCardFileName(CardRank rank, CardSuit suit)
     return rankStr + "_of_" + suitStr + ".png";
 }
 
-// Clasa pentru incarcarea si gestionarea texturilor cartilor
 class CardTextureManager
 {
 private:
     std::map<std::string, sf::Texture> textures;
-    sf::Texture backTexture;
+    std::string m_resourcesPath;
 
 public:
+    CardTextureManager()
+    {
+        m_resourcesPath = GetResourcesPath();
+    }
+
     bool LoadCardTexture(CardRank rank, CardSuit suit)
     {
         std::string fileName = GetCardFileName(rank, suit);
-        std::string path = "../cards/" + fileName;
-        
+        std::string fullPath = m_resourcesPath + "/" + fileName;
+
         if (textures.find(fileName) == textures.end())
         {
             sf::Texture texture;
-            if (texture.loadFromFile(path))
+            if (texture.loadFromFile(fullPath))
             {
                 textures[fileName] = std::move(texture);
                 return true;
             }
+            return false;
         }
-        return textures.find(fileName) != textures.end();
+        return true;
     }
 
     sf::Texture* GetCardTexture(CardRank rank, CardSuit suit)
@@ -92,7 +121,6 @@ public:
     }
 };
 
-// Observer pentru actualizarea UI-ului
 class SFMLObserver : public IGameObserver
 {
 public:
@@ -101,42 +129,47 @@ public:
     GameState currentState;
     bool gameEnded = false;
     bool playerTurn = false;
+    
+    // Delay system
+    bool waitingForDealer = false;
+    sf::Clock dealerDelayClock;
+    float dealerDelaySeconds = 1.5f;
 
-    virtual void OnGameStarted(const HandData& playerHand, const HandData& dealerHand) override
+    void OnGameStarted(const HandData& playerHand, const HandData& dealerHand) override
     {
         this->playerHand = playerHand;
         this->dealerHand = dealerHand;
         this->gameEnded = false;
         this->playerTurn = true;
-        this->currentState = GameState::PlayerWins; // placeholder
+        this->waitingForDealer = false;
     }
 
-    virtual void OnPlayerHandChanged(const HandData& playerHand) override
+    void OnPlayerHandChanged(const HandData& playerHand) override
     {
         this->playerHand = playerHand;
     }
 
-    virtual void OnDealerHandChanged(const HandData& dealerHand) override
+    void OnDealerHandChanged(const HandData& dealerHand) override
     {
         this->dealerHand = dealerHand;
     }
 
-    virtual void OnGameEnded(GameState state, const HandData& finalPlayerData, const HandData& finalDealerData) override
+    void OnGameEnded(GameState state, const HandData& finalPlayerData, const HandData& finalDealerData) override
     {
         this->currentState = state;
         this->playerHand = finalPlayerData;
         this->dealerHand = finalDealerData;
         this->gameEnded = true;
         this->playerTurn = false;
+        this->waitingForDealer = false;
     }
 
-    virtual void OnPlayerTurnBegan() override
+    void OnPlayerTurnBegan() override
     {
         this->playerTurn = true;
     }
 };
 
-// Functie pentru desenarea unei carti
 void DrawCard(sf::RenderWindow& window, CardTextureManager& cardManager, const CardData& card, float x, float y)
 {
     sf::Texture* texture = cardManager.GetCardTexture(card.rank, card.suit);
@@ -148,27 +181,31 @@ void DrawCard(sf::RenderWindow& window, CardTextureManager& cardManager, const C
         sprite.setScale({scale, scale});
         window.draw(sprite);
     }
+    else
+    {
+        sf::RectangleShape fallbackCard({100.0f, 140.0f});
+        fallbackCard.setPosition({x, y});
+        fallbackCard.setFillColor(sf::Color::White);
+        fallbackCard.setOutlineColor(sf::Color::Red);
+        fallbackCard.setOutlineThickness(2.0f);
+        window.draw(fallbackCard);
+    }
 }
 
-// Functie pentru calcularea pozitiei de start centrata
 float CalculateCenteredStartX(size_t cardCount, float cardWidth, float spacing, float screenWidth)
 {
     if (cardCount == 0) return screenWidth / 2.0f;
-    
     float totalWidth = cardCount * cardWidth + (cardCount - 1) * spacing;
     return (screenWidth - totalWidth) / 2.0f;
 }
 
-// Functie pentru desenarea unei maini
 void DrawHand(sf::RenderWindow& window, CardTextureManager& cardManager, const HandData& hand, float y, float screenWidth, bool showAll = true)
 {
     float cardWidth = 100.0f;
     float spacing = 20.0f;
-    
-    // Calculeaza numarul de carti vizibile pentru centrare
     size_t visibleCards = showAll ? hand.cards.size() : 1;
     float startX = CalculateCenteredStartX(visibleCards, cardWidth, spacing, screenWidth);
-    
+
     for (size_t i = 0; i < hand.cards.size(); ++i)
     {
         if (showAll || i == 0)
@@ -177,7 +214,6 @@ void DrawHand(sf::RenderWindow& window, CardTextureManager& cardManager, const H
         }
         else
         {
-            // Deseneaza spatele cartii pentru cartile ascunse
             sf::RectangleShape cardBack({cardWidth, 140.0f});
             cardBack.setPosition({startX + i * (cardWidth + spacing), y});
             cardBack.setFillColor(sf::Color::Blue);
@@ -188,55 +224,49 @@ void DrawHand(sf::RenderWindow& window, CardTextureManager& cardManager, const H
     }
 }
 
-// Functie pentru desenarea unui buton
 bool IsButtonClicked(float mouseX, float mouseY, float btnX, float btnY, float btnWidth, float btnHeight)
 {
-    return mouseX >= btnX && mouseX <= btnX + btnWidth &&
-           mouseY >= btnY && mouseY <= btnY + btnHeight;
+    return mouseX >= btnX && mouseX <= btnX + btnWidth && mouseY >= btnY && mouseY <= btnY + btnHeight;
 }
 
-void DrawButton(sf::RenderWindow& window, float x, float y, float width, float height, const std::string& text, sf::Font* font)
+void DrawButton(sf::RenderWindow& window, float x, float y, float width, float height, const std::string& text, sf::Font* font, bool enabled = true)
 {
     sf::RectangleShape button({width, height});
     button.setPosition({x, y});
-    button.setFillColor(sf::Color(100, 150, 100));
+    button.setFillColor(enabled ? sf::Color(100, 150, 100) : sf::Color(80, 80, 80));
     button.setOutlineColor(sf::Color::Black);
     button.setOutlineThickness(2.0f);
     window.draw(button);
 
-    // Deseneaza textul pe buton daca avem font
     if (font)
     {
         sf::Text buttonText(*font, text);
         buttonText.setCharacterSize(18);
         buttonText.setFillColor(sf::Color::White);
-        
-        // Centreaza textul pe buton
         sf::FloatRect textBounds = buttonText.getLocalBounds();
         float textX = x + (width - textBounds.size.x) / 2.0f - textBounds.position.x;
         float textY = y + (height - textBounds.size.y) / 2.0f - textBounds.position.y;
         buttonText.setPosition({textX, textY});
-        
         window.draw(buttonText);
     }
 }
 
 int main()
 {
-    sf::RenderWindow window(sf::VideoMode({ 1000, 700 }), "Blackjack SFML");
+    sf::RenderWindow window(sf::VideoMode({1000, 700}), "Blackjack SFML");
 
-    // Incarca fontul (incearca mai multe locatii comune)
+    // Load Font
     sf::Font font;
     bool fontLoaded = false;
-    
-    // Listeaza locatiile comune pentru fonturi Windows
+
     const char* fontPaths[] = {
+        "/System/Library/Fonts/Supplemental/Arial.ttf",
+        "/System/Library/Fonts/Helvetica.ttc",
+        "/Library/Fonts/Arial.ttf",
         "C:/Windows/Fonts/arial.ttf",
-        "C:/Windows/Fonts/calibri.ttf",
-        "C:/Windows/Fonts/tahoma.ttf",
-        "C:/Windows/Fonts/verdana.ttf"
+        "C:/Windows/Fonts/calibri.ttf"
     };
-    
+
     for (const char* path : fontPaths)
     {
         try
@@ -245,36 +275,34 @@ int main()
             fontLoaded = true;
             break;
         }
-        catch (...)
-        {
-            // Continua cu urmatorul font
-        }
+        catch (...) { }
     }
 
-    // Initializeaza jocul
-    GameEngine game;
+    std::unique_ptr<IGameController> game = BlackjackAPI::CreateGameController();
     SFMLObserver observer;
-    game.RegisterObserver(&observer);
+    game->RegisterObserver(&observer);
 
-    // Incarca texturile cartilor
     CardTextureManager cardManager;
     cardManager.LoadAllCards();
 
-    // Butoane
-    float hitBtnX = 100.0f;
-    float hitBtnY = 600.0f;
-    float standBtnX = 250.0f;
-    float standBtnY = 600.0f;
-    float newGameBtnX = 400.0f;
-    float newGameBtnY = 600.0f;
-    float btnWidth = 120.0f;
-    float btnHeight = 40.0f;
+    float hitBtnX = 100.0f, hitBtnY = 600.0f;
+    float standBtnX = 250.0f, standBtnY = 600.0f;
+    float newGameBtnX = 400.0f, newGameBtnY = 600.0f;
+    float btnWidth = 120.0f, btnHeight = 40.0f;
 
-    // Porneste primul joc
-    game.StartNewGame();
+    game->StartNewGame();
 
     while (window.isOpen())
     {
+        if (observer.waitingForDealer)
+        {
+            if (observer.dealerDelayClock.getElapsedTime().asSeconds() >= observer.dealerDelaySeconds)
+            {
+                observer.waitingForDealer = false;
+                game->PlayerStand();
+            }
+        }
+
         while (const std::optional event = window.pollEvent())
         {
             if (event->is<sf::Event::Closed>())
@@ -283,142 +311,96 @@ int main()
             }
             else if (const auto* mousePressed = event->getIf<sf::Event::MouseButtonPressed>())
             {
-                if (mousePressed->button == sf::Mouse::Button::Left)
+                if (mousePressed->button == sf::Mouse::Button::Left && !observer.waitingForDealer)
                 {
                     float mouseX = static_cast<float>(mousePressed->position.x);
                     float mouseY = static_cast<float>(mousePressed->position.y);
 
-                    // Verifica click pe butoane
                     if (IsButtonClicked(mouseX, mouseY, hitBtnX, hitBtnY, btnWidth, btnHeight))
                     {
                         if (observer.playerTurn && !observer.gameEnded)
                         {
-                            game.PlayerHit();
+                            game->PlayerHit();
+                            
+                            if (observer.playerHand.value > 21)
+                            {
+                                observer.waitingForDealer = true;
+                                observer.dealerDelayClock.restart();
+                            }
                         }
                     }
                     else if (IsButtonClicked(mouseX, mouseY, standBtnX, standBtnY, btnWidth, btnHeight))
                     {
                         if (observer.playerTurn && !observer.gameEnded)
                         {
-                            game.PlayerStand();
+                            observer.waitingForDealer = true;
+                            observer.dealerDelayClock.restart();
                         }
                     }
                     else if (IsButtonClicked(mouseX, mouseY, newGameBtnX, newGameBtnY, btnWidth, btnHeight))
                     {
-                        game.StartNewGame();
+                        game->StartNewGame();
                     }
                 }
             }
         }
 
-        // Deseneaza masa (fundal verde)
-        window.clear(sf::Color(34, 139, 34)); // Verde inchis pentru masa
+        window.clear(sf::Color(34, 139, 34));
 
-        // Deseneaza etichete pentru scoruri cu text (centrate)
-        // Eticheta pentru dealer (centrata)
-        sf::RectangleShape dealerLabel({200.0f, 30.0f});
-        dealerLabel.setPosition({400.0f, 100.0f});
-        dealerLabel.setFillColor(sf::Color(50, 50, 50, 180));
-        window.draw(dealerLabel);
-
-        // Eticheta pentru jucator (centrata)
-        sf::RectangleShape playerLabel({200.0f, 30.0f});
-        playerLabel.setPosition({400.0f, 500.0f});
-        playerLabel.setFillColor(sf::Color(50, 50, 50, 180));
-        window.draw(playerLabel);
-
-        // Mesaj de rezultat (doar forma, fara text)
-        if (observer.gameEnded)
+        if (observer.waitingForDealer && fontLoaded)
         {
-            sf::RectangleShape resultBox({400.0f, 60.0f});
-            resultBox.setPosition({300.0f, 340.0f});
-            resultBox.setFillColor(sf::Color(255, 255, 0, 200));
-            resultBox.setOutlineColor(sf::Color::Black);
-            resultBox.setOutlineThickness(3.0f);
-            window.draw(resultBox);
+            float elapsed = observer.dealerDelayClock.getElapsedTime().asSeconds();
+            float remaining = observer.dealerDelaySeconds - elapsed;
+            
+            std::string waitText = "Dealerul trage carti in " + 
+                                  std::to_string(static_cast<int>(remaining + 1)) + "...";
+            
+            sf::Text waitMessage(font, waitText, 30);
+            waitMessage.setFillColor(sf::Color::Yellow);
+            waitMessage.setPosition({250, 340});
+            window.draw(waitMessage);
         }
 
-        // Deseneaza cartile dealerului (centrate pe mijloc, in jumatatea de sus)
-        bool showAllDealerCards = observer.gameEnded;
-        float windowWidth = 1000.0f;
-        DrawHand(window, cardManager, observer.dealerHand, 150, windowWidth, showAllDealerCards);
+        DrawHand(window, cardManager, observer.dealerHand, 150, 1000.0f, observer.gameEnded);
 
-        // Deseneaza cartile jucatorului (centrate pe mijloc, in jumatatea de jos)
-        DrawHand(window, cardManager, observer.playerHand, 550, windowWidth, true);
+        DrawHand(window, cardManager, observer.playerHand, 550, 1000.0f, true);
 
-        // Deseneaza textul pentru sume
         sf::Font* fontPtr = fontLoaded ? &font : nullptr;
         if (fontPtr)
         {
-            // Suma dealerului
             std::string dealerScoreText = "Dealer: ";
-            if (observer.gameEnded || observer.dealerHand.cards.size() > 1)
-            {
-                dealerScoreText += std::to_string(observer.dealerHand.value);
-            }
-            else
-            {
-                dealerScoreText += "?";
-            }
-            sf::Text dealerScore(*fontPtr, dealerScoreText);
-            dealerScore.setCharacterSize(20);
+            dealerScoreText += observer.gameEnded ? std::to_string(observer.dealerHand.value) : "?";
+            sf::Text dealerScore(*fontPtr, dealerScoreText, 20);
             dealerScore.setFillColor(sf::Color::White);
-            // Centreaza textul pe eticheta
-            sf::FloatRect dealerTextBounds = dealerScore.getLocalBounds();
-            float dealerTextX = 400.0f + (200.0f - dealerTextBounds.size.x) / 2.0f - dealerTextBounds.position.x;
-            dealerScore.setPosition({dealerTextX, 105.0f});
+            dealerScore.setPosition({400, 105});
             window.draw(dealerScore);
 
-            // Suma jucatorului
-            std::string playerScoreText = "Jucator: " + std::to_string(observer.playerHand.value);
-            sf::Text playerScore(*fontPtr, playerScoreText);
-            playerScore.setCharacterSize(20);
+            sf::Text playerScore(*fontPtr, "Jucator: " + std::to_string(observer.playerHand.value), 20);
             playerScore.setFillColor(sf::Color::White);
-            // Centreaza textul pe eticheta
-            sf::FloatRect playerTextBounds = playerScore.getLocalBounds();
-            float playerTextX = 400.0f + (200.0f - playerTextBounds.size.x) / 2.0f - playerTextBounds.position.x;
-            playerScore.setPosition({playerTextX, 505.0f});
+            playerScore.setPosition({400, 505});
             window.draw(playerScore);
 
-            // Mesaj de rezultat
             if (observer.gameEnded)
             {
                 std::string resultText;
                 switch (observer.currentState)
                 {
-                    case GameState::PlayerWins:
-                        resultText = "AI CASTIGAT!";
-                        break;
-                    case GameState::DealerWins:
-                        resultText = "DEALERUL A CASTIGAT!";
-                        break;
-                    case GameState::Push:
-                        resultText = "EGALITATE!";
-                        break;
-                    case GameState::PlayerBlackjack:
-                        resultText = "BLACKJACK! AI CASTIGAT!";
-                        break;
-                    case GameState::PlayerBust:
-                        resultText = "BUST! AI DEPASIT 21!";
-                        break;
+                    case GameState::PlayerWins:      resultText = "AI CASTIGAT!"; break;
+                    case GameState::DealerWins:      resultText = "DEALERUL A CASTIGAT!"; break;
+                    case GameState::Push:            resultText = "EGALITATE!"; break;
+                    case GameState::PlayerBlackjack: resultText = "BLACKJACK!"; break;
+                    case GameState::PlayerBust:      resultText = "BUST!"; break;
                 }
-                sf::Text result(*fontPtr, resultText);
-                result.setCharacterSize(28);
-                result.setFillColor(sf::Color::Black);
-                result.setStyle(sf::Text::Bold);
-                
-                // Centreaza textul in caseta
-                sf::FloatRect resultBounds = result.getLocalBounds();
-                float resultX = 300.0f + (400.0f - resultBounds.size.x) / 2.0f - resultBounds.position.x;
-                float resultY = 340.0f + (60.0f - resultBounds.size.y) / 2.0f - resultBounds.position.y;
-                result.setPosition({resultX, resultY});
+                sf::Text result(*fontPtr, resultText, 28);
+                result.setFillColor(sf::Color::Yellow);
+                result.setPosition({300, 340});
                 window.draw(result);
             }
         }
 
-        // Deseneaza butoanele
-        DrawButton(window, hitBtnX, hitBtnY, btnWidth, btnHeight, "HIT", fontPtr);
-        DrawButton(window, standBtnX, standBtnY, btnWidth, btnHeight, "STAND", fontPtr);
+        bool buttonsEnabled = !observer.gameEnded && !observer.waitingForDealer;
+        DrawButton(window, hitBtnX, hitBtnY, btnWidth, btnHeight, "HIT", fontPtr, buttonsEnabled);
+        DrawButton(window, standBtnX, standBtnY, btnWidth, btnHeight, "STAND", fontPtr, buttonsEnabled);
         DrawButton(window, newGameBtnX, newGameBtnY, btnWidth, btnHeight, "JOC NOU", fontPtr);
 
         window.display();

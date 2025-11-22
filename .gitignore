@@ -246,3 +246,4 @@ node_modules/
 # Mac/VS Code build artifacts
 *.dSYM/
 BlackjackGame/BlackjackUI/blackjack_game
+BlackjackGame/BlackjackUI/run_tests
