@@ -6,7 +6,7 @@ void SFMLGameObserver::OnGameStarted(const HandData& playerHand, const HandData&
     this->dealerHand = dealerHand;
     this->gameEnded = false;
     this->playerTurn = true;
-    this->currentState = GameState::PlayerWins; // placeholder
+    this->currentState = GameState::PlayerWins; 
 }
 
 void SFMLGameObserver::OnPlayerHandChanged(const HandData& playerHand)
@@ -32,4 +32,5 @@ void SFMLGameObserver::OnPlayerTurnBegan()
 {
     this->playerTurn = true;
 }
+
 

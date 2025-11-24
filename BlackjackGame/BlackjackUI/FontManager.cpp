@@ -2,7 +2,6 @@
 
 FontManager::FontManager()
 {
-    // Listeaza locatiile comune pentru fonturi Windows
     const char *fontPaths[] = {
         "C:/Windows/Fonts/arial.ttf",
         "C:/Windows/Fonts/calibri.ttf",
@@ -14,7 +13,6 @@ FontManager::FontManager()
         "/System/Library/Fonts/SFNS.ttf",
     };
 
-    // Încearcă să încarce primul font disponibil
     for (const char *path : fontPaths)
     {
         if (TryLoadFont(path))
@@ -34,7 +32,6 @@ bool FontManager::TryLoadFont(const char *path)
     }
     catch (...)
     {
-        // Fontul nu a putut fi încărcat din acest path
         return false;
     }
 }
@@ -52,3 +49,4 @@ bool FontManager::IsFontLoaded() const
 {
     return m_fontLoaded;
 }
+

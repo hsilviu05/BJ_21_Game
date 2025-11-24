@@ -84,7 +84,6 @@ void DrawCard(sf::RenderWindow& window, CardTextureManager& cardManager, const C
     {
         sf::Sprite sprite(*texture);
         sprite.setPosition({x, y});
-        // Redus scale-ul pentru a avea mai mult spațiu și a evita tăierea cărților
         float scale = 0.25f;
         sprite.setScale({scale, scale});
         window.draw(sprite);
@@ -101,12 +100,10 @@ float CalculateCenteredStartX(size_t cardCount, float cardWidth, float spacing, 
 
 void DrawHand(sf::RenderWindow& window, CardTextureManager& cardManager, const HandData& hand, float y, float screenWidth, bool showAll)
 {
-    // Ajustat cardWidth pentru a corespunde cu scale-ul redus (0.25)
-    // Dimensiunea reală a cărții cu scale 0.25 este aproximativ 83-85 pixeli
+ 
     float cardWidth = 85.0f;
     float spacing = 15.0f;
     
-    // Calculeaza numarul de carti vizibile pentru centrare
     size_t visibleCards = showAll ? hand.cards.size() : 1;
     float startX = CalculateCenteredStartX(visibleCards, cardWidth, spacing, screenWidth);
     
@@ -118,9 +115,8 @@ void DrawHand(sf::RenderWindow& window, CardTextureManager& cardManager, const H
         }
         else
         {
-            // Deseneaza spatele cartii pentru cartile ascunse
-            // Ajustat inaltimea pentru a corespunde cu scale-ul redus
-            float cardHeight = cardWidth * 1.4f; // Proportie standard pentru carti
+         
+            float cardHeight = cardWidth * 1.4f;
             sf::RectangleShape cardBack({cardWidth, cardHeight});
             cardBack.setPosition({startX + i * (cardWidth + spacing), y});
             cardBack.setFillColor(sf::Color::Blue);

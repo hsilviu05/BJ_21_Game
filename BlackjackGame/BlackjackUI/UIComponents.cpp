@@ -15,14 +15,12 @@ void DrawButton(sf::RenderWindow& window, float x, float y, float width, float h
     button.setOutlineThickness(2.0f);
     window.draw(button);
 
-    // Deseneaza textul pe buton daca avem font
     if (font)
     {
         sf::Text buttonText(*font, text);
         buttonText.setCharacterSize(18);
         buttonText.setFillColor(sf::Color::White);
         
-        // Centreaza textul pe buton
         sf::FloatRect textBounds = buttonText.getLocalBounds();
         float textX = x + (width - textBounds.size.x) / 2.0f - textBounds.position.x;
         float textY = y + (height - textBounds.size.y) / 2.0f - textBounds.position.y;
@@ -31,4 +29,5 @@ void DrawButton(sf::RenderWindow& window, float x, float y, float width, float h
         window.draw(buttonText);
     }
 }
+
 

@@ -152,7 +152,6 @@
     <ClCompile Include="GameController.cpp" />
     <ClCompile Include="GameObserver.cpp" />
     <ClCompile Include="GameRenderer.cpp" />
-    <ClCompile Include="Mainwindow.cpp" />
     <ClCompile Include="Source.cpp" />
     <ClCompile Include="UIComponents.cpp" />
   </ItemGroup>

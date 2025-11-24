@@ -23,35 +23,29 @@ void GameRenderer::Render(sf::RenderWindow& window)
 
 void GameRenderer::DrawTable(sf::RenderWindow& window)
 {
-    // Deseneaza masa (fundal verde cu pattern)
-    window.clear(sf::Color(34, 139, 34)); // Verde inchis pentru masa
+    window.clear(sf::Color(34, 139, 34));
     
-    // Adauga un border elegant pentru masa
     float borderThickness = 8.0f;
     
-    // Border exterior (mai inchis)
     sf::RectangleShape outerBorder({m_windowWidth, m_windowHeight});
     outerBorder.setPosition({0.0f, 0.0f});
     outerBorder.setFillColor(sf::Color::Transparent);
-    outerBorder.setOutlineColor(sf::Color(0, 100, 0, 255)); // Verde foarte inchis
+    outerBorder.setOutlineColor(sf::Color(0, 100, 0, 255));
     outerBorder.setOutlineThickness(borderThickness);
     window.draw(outerBorder);
     
-    // Border interior (mai deschis, pentru efect de adancime)
     float innerMargin = borderThickness;
     sf::RectangleShape innerBorder({m_windowWidth - 2 * innerMargin, m_windowHeight - 2 * innerMargin});
     innerBorder.setPosition({innerMargin, innerMargin});
     innerBorder.setFillColor(sf::Color::Transparent);
-    innerBorder.setOutlineColor(sf::Color(50, 150, 50, 200)); // Verde deschis
+    innerBorder.setOutlineColor(sf::Color(50, 150, 50, 200));
     innerBorder.setOutlineThickness(3.0f);
     window.draw(innerBorder);
     
-    // Adauga un pattern subtil (linii diagonale subtile pentru textura)
-    // Deseneaza linii subtile pentru a da impresia de textura a mesei
-    sf::Color lineColor(20, 120, 20, 30); // Verde foarte subtil
+
+    sf::Color lineColor(20, 120, 20, 30); 
     float lineSpacing = 40.0f;
     
-    // Linii diagonale subtile
     for (float y = 0; y < m_windowHeight; y += lineSpacing)
     {
         sf::Vertex line[2] = {
@@ -64,19 +58,17 @@ void GameRenderer::DrawTable(sf::RenderWindow& window)
 
 void GameRenderer::DrawScoreLabels(sf::RenderWindow& window)
 {
-    // Eticheta pentru dealer (sub cartile dealerului, centrata, mai jos)
-    // Cartile dealerului sunt la Y=120, cu scale 0.25 o carte are ~120px inaltime, deci se termina la ~240px
+    
     sf::RectangleShape dealerLabel({250.0f, 35.0f});
-    dealerLabel.setPosition({375.0f, 300.0f}); // Sub cartile dealerului, mai jos
+    dealerLabel.setPosition({375.0f, 80.0f}); 
     dealerLabel.setFillColor(sf::Color(0, 0, 0, 220));
     dealerLabel.setOutlineColor(sf::Color::White);
     dealerLabel.setOutlineThickness(2.0f);
     window.draw(dealerLabel);
 
-    // Eticheta pentru jucator (sub cartile jucatorului, centrata, mai jos)
-    // Cartile jucatorului sunt la Y=480, cu scale 0.25 o carte are ~120px inaltime, deci se termina la ~600px
+    
     sf::RectangleShape playerLabel({250.0f, 35.0f});
-    playerLabel.setPosition({375.0f, 660.0f}); // Sub cartile jucatorului, mai jos
+    playerLabel.setPosition({375.0f, 680.0f});
     playerLabel.setFillColor(sf::Color(0, 0, 0, 220));
     playerLabel.setOutlineColor(sf::Color::White);
     playerLabel.setOutlineThickness(2.0f);
@@ -88,7 +80,6 @@ void GameRenderer::DrawScores(sf::RenderWindow& window)
     sf::Font* fontPtr = m_fontManager->GetFont();
     if (!fontPtr) return;
 
-    // Suma dealerului (sub cartile dealerului)
     std::string dealerScoreText = "Dealer: ";
     if (m_observer->gameEnded || m_observer->dealerHand.cards.size() > 1)
     {
@@ -102,22 +93,19 @@ void GameRenderer::DrawScores(sf::RenderWindow& window)
     dealerScore.setCharacterSize(24);
     dealerScore.setFillColor(sf::Color::White);
     dealerScore.setStyle(sf::Text::Bold);
-    // Centreaza textul pe eticheta (centrat pe 375 + 250/2 = 500)
     sf::FloatRect dealerTextBounds = dealerScore.getLocalBounds();
     float dealerTextX = 500.0f - dealerTextBounds.size.x / 2.0f - dealerTextBounds.position.x;
-    dealerScore.setPosition({dealerTextX, 305.0f}); // Sub cartile dealerului, mai jos
+    dealerScore.setPosition({dealerTextX, 80.0f}); 
     window.draw(dealerScore);
 
-    // Suma jucatorului (sub cartile jucatorului)
     std::string playerScoreText = "Jucator: " + std::to_string(m_observer->playerHand.value);
     sf::Text playerScore(*fontPtr, playerScoreText);
     playerScore.setCharacterSize(24);
     playerScore.setFillColor(sf::Color::White);
     playerScore.setStyle(sf::Text::Bold);
-    // Centreaza textul pe eticheta (centrat pe 375 + 250/2 = 500)
     sf::FloatRect playerTextBounds = playerScore.getLocalBounds();
     float playerTextX = 500.0f - playerTextBounds.size.x / 2.0f - playerTextBounds.position.x;
-    playerScore.setPosition({playerTextX, 665.0f}); // Sub cartile jucatorului, mai jos
+    playerScore.setPosition({playerTextX, 680.0f});
     window.draw(playerScore);
 }
 
@@ -128,7 +116,6 @@ void GameRenderer::DrawResult(sf::RenderWindow& window)
     sf::Font* fontPtr = m_fontManager->GetFont();
     if (!fontPtr) return;
 
-    // Determina textul si culoarea in functie de rezultat
     std::string resultText;
     sf::Color backgroundColor;
     sf::Color textColor;
@@ -137,38 +124,36 @@ void GameRenderer::DrawResult(sf::RenderWindow& window)
     {
         case GameState::PlayerWins:
             resultText = "AI CASTIGAT!";
-            backgroundColor = sf::Color(0, 200, 0, 230); // Verde
+            backgroundColor = sf::Color(0, 200, 0, 230);
             textColor = sf::Color::White;
             break;
         case GameState::PlayerBlackjack:
             resultText = "BLACKJACK! AI CASTIGAT!";
-            backgroundColor = sf::Color(0, 200, 0, 230); // Verde
+            backgroundColor = sf::Color(0, 200, 0, 230);
             textColor = sf::Color::White;
             break;
         case GameState::DealerWins:
             resultText = "DEALERUL A CASTIGAT!";
-            backgroundColor = sf::Color(200, 0, 0, 230); // Rosu
+            backgroundColor = sf::Color(200, 0, 0, 230);
             textColor = sf::Color::White;
             break;
         case GameState::PlayerBust:
             resultText = "BUST! AI DEPASIT 21!";
-            backgroundColor = sf::Color(200, 0, 0, 230); // Rosu
+            backgroundColor = sf::Color(200, 0, 0, 230);
             textColor = sf::Color::White;
             break;
         case GameState::Push:
             resultText = "EGALITATE!";
-            backgroundColor = sf::Color(255, 255, 0, 230); // Galben
+            backgroundColor = sf::Color(255, 255, 0, 230);
             textColor = sf::Color::Black;
             break;
     }
 
-    // Overlay semi-transparent pentru a face mesajul mai vizibil
     sf::RectangleShape overlay({m_windowWidth, m_windowHeight});
     overlay.setPosition({0.0f, 0.0f});
     overlay.setFillColor(sf::Color(0, 0, 0, 150));
     window.draw(overlay);
 
-    // Caseta de rezultat (centrata pe ecran)
     float boxWidth = 500.0f;
     float boxHeight = 100.0f;
     float boxX = (m_windowWidth - boxWidth) / 2.0f;
@@ -181,13 +166,11 @@ void GameRenderer::DrawResult(sf::RenderWindow& window)
     resultBox.setOutlineThickness(4.0f);
     window.draw(resultBox);
 
-    // Textul de rezultat (centrat in caseta)
     sf::Text result(*fontPtr, resultText);
     result.setCharacterSize(36);
     result.setFillColor(textColor);
     result.setStyle(sf::Text::Bold);
     
-    // Centreaza textul in caseta
     sf::FloatRect resultBounds = result.getLocalBounds();
     float resultX = boxX + (boxWidth - resultBounds.size.x) / 2.0f - resultBounds.position.x;
     float resultY = boxY + (boxHeight - resultBounds.size.y) / 2.0f - resultBounds.position.y;
@@ -197,12 +180,9 @@ void GameRenderer::DrawResult(sf::RenderWindow& window)
 
 void GameRenderer::DrawCards(sf::RenderWindow& window)
 {
-    // Deseneaza cartile dealerului (centrate pe mijloc, in jumatatea de sus)
     bool showAllDealerCards = m_observer->gameEnded;
     DrawHand(window, *m_cardManager, m_observer->dealerHand, 120, m_windowWidth, showAllDealerCards);
 
-    // Deseneaza cartile jucatorului (centrate pe mijloc, in jumatatea de jos, dar mai sus pentru a nu iesi din cadru)
-    // Ajustat Y pentru a fi mai sus și a nu iesi din cadru (fereastra are 700px inaltime)
     DrawHand(window, *m_cardManager, m_observer->playerHand, 480, m_windowWidth, true);
 }
 
@@ -210,12 +190,11 @@ void GameRenderer::DrawButtons(sf::RenderWindow& window)
 {
     sf::Font* fontPtr = m_fontManager->GetFont();
     
-    // Butoane mutate in stanga jos, aranjate orizontal in linie, mai jos
     float btnStartX = 50.0f;
-    float btnY = 680.0f; // Mai jos
+    float btnY = 730.0f; 
     float btnWidth = 120.0f;
     float btnHeight = 40.0f;
-    float btnSpacing = 10.0f; // Spatiu intre butoane
+    float btnSpacing = 10.0f;
 
     float hitBtnX = btnStartX;
     float standBtnX = btnStartX + btnWidth + btnSpacing;

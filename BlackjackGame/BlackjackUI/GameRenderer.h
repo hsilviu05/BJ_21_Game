@@ -4,8 +4,6 @@
 #include "FontManager.h"
 #include "CardRenderer.h"
 
-// Clasa care coordonează toate componentele de rendering
-// Gestionează desenarea mesei, cărților, butoanelor, textului și rezultatelor
 class GameRenderer
 {
 private:
@@ -15,7 +13,6 @@ private:
     float m_windowWidth;
     float m_windowHeight;
 
-    // Metode private pentru desenarea diferitelor componente
     void DrawTable(sf::RenderWindow& window);
     void DrawScoreLabels(sf::RenderWindow& window);
     void DrawScores(sf::RenderWindow& window);
@@ -26,7 +23,7 @@ private:
 public:
     GameRenderer(SFMLGameObserver* observer, FontManager* fontManager, CardTextureManager* cardManager, float windowWidth, float windowHeight);
     
-    // Metoda principală care desenează tot UI-ul
     void Render(sf::RenderWindow& window);
 };
+
 
